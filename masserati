@@ -1,0 +1,57 @@
+# === 1. Import library yang dibutuhkan ===
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+
+# === 2. Masukkan dataset ===
+# Cara 1: Masukkan manual (contoh UTS & UAS)
+data = {
+    "UTS": [40, 55, 65, 70, 75, 80, 85, 50, 60, 72, 88, 90, 45, 58, 77],
+    "UAS": [45, 60, 68, 72, 78, 83, 90, 52, 63, 74, 92, 95, 50, 62, 80]
+}
+df = pd.DataFrame(data)
+
+# Cara 2: Kalau dosen kasih file CSV, gunakan:
+# df = pd.read_csv("nama_file.csv")
+
+# === 3. Siapkan data untuk clustering ===
+X = df.values  # ambil semua kolom numerik untuk dianalisis
+
+# === 4. Tentukan jumlah cluster (k) ===
+k = 3  # ubah sesuai kebutuhan
+kmeans = KMeans(n_clusters=k, random_state=42)
+kmeans.fit(X)   # jalankan algoritma K-Means
+
+# === 5. Simpan hasil cluster ke dataset ===
+df["Cluster"] = kmeans.labels_
+
+# === 6. Ambil centroid (pusat cluster) ===
+centroids = kmeans.cluster_centers_
+
+# === 7. Buat interpretasi sederhana untuk tiap cluster ===
+interpretasi = {}
+for i in range(k):
+    rata2 = centroids[i].mean()
+    if rata2 < df.values.mean():
+        interpretasi[i] = "Kelompok Nilai Rendah"
+    elif rata2 < df.values.mean() + df.values.std():
+        interpretasi[i] = "Kelompok Nilai Sedang"
+    else:
+        interpretasi[i] = "Kelompok Nilai Tinggi"
+
+# === 8. Visualisasi hasil clustering ===
+plt.scatter(X[:,0], X[:,1], c=kmeans.labels_, cmap="viridis", s=100, alpha=0.7)
+plt.scatter(centroids[:,0], centroids[:,1], c="red", marker="X", s=200, label="Centroid")
+
+# Tambahkan teks interpretasi pada tiap centroid
+for i, (x, y) in enumerate(centroids):
+    plt.text(x, y+1, interpretasi[i], fontsize=10, ha="center", color="red", weight="bold")
+
+plt.xlabel(df.columns[0])  # otomatis pakai nama kolom pertama
+plt.ylabel(df.columns[1])  # otomatis pakai nama kolom kedua
+plt.title("Clustering dengan K-Means")
+plt.legend()
+plt.show()
+
+# === 9. Tampilkan hasil tabel akhir ===
+print(df)
