@@ -1,0 +1,50 @@
+# === 1. Import library ===
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
+
+# === 2. Contoh dataset teks ===
+documents = [
+    "Saya suka belajar data mining",
+    "Machine learning sangat berguna untuk prediksi",
+    "K-Means digunakan untuk clustering",
+    "Saya membaca buku tentang basis data",
+    "Analisis data membantu bisnis mengambil keputusan",
+    "Algoritma unsupervised menemukan pola tersembunyi",
+    "Prediksi harga rumah bisa dengan regresi",
+    "Segmentasi pelanggan menggunakan clustering"
+]
+
+# === 3. Ubah teks jadi vektor TF-IDF ===
+vectorizer = TfidfVectorizer(stop_words="indonesian")
+X = vectorizer.fit_transform(documents)
+
+# === 4. Jalankan K-Means ===
+k = 2  # jumlah cluster, bisa diubah
+kmeans = KMeans(n_clusters=k, random_state=42)
+kmeans.fit(X)
+
+# Tambahkan hasil cluster ke dataframe
+df = pd.DataFrame({"Dokumen": documents, "Cluster": kmeans.labels_})
+
+# === 5. Reduksi dimensi untuk visualisasi (PCA ke 2D) ===
+pca = PCA(n_components=2)
+reduced_data = pca.fit_transform(X.toarray())
+
+# === 6. Visualisasi hasil clustering teks ===
+plt.figure(figsize=(8,6))
+plt.scatter(reduced_data[:,0], reduced_data[:,1], c=kmeans.labels_, cmap="viridis", s=100, alpha=0.7)
+
+# Tambahkan label teks (potongan dokumen) di titik scatter
+for i, doc in enumerate(documents):
+    plt.text(reduced_data[i,0]+0.01, reduced_data[i,1]+0.01, doc[:15]+"...", fontsize=8)
+
+plt.title("Clustering Dokumen Teks dengan K-Means (TF-IDF + PCA)")
+plt.xlabel("PCA 1")
+plt.ylabel("PCA 2")
+plt.show()
+
+# === 7. Lihat tabel hasil cluster ===
+print(df)
